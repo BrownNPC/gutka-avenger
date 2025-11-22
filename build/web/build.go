@@ -13,8 +13,6 @@ import (
 	"strings"
 )
 
-func init() {
-}
 func main() {
 	// run an http server too
 	serve := flag.Bool("serve", false, "Run the server")

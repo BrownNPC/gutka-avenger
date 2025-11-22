@@ -3,6 +3,7 @@ module GameFrameworkTM
 go 1.24.1
 
 require (
+	github.com/BrownNPC/simple-ecs v1.4.0
 	github.com/gen2brain/raylib-go/raylib v0.56.0-dev.0.20250828075616-2004353b4562
 	golang.org/x/mod v0.17.0
 )

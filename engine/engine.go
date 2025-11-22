@@ -1,6 +1,7 @@
 package engine
 
 import (
+	c "GameFrameworkTM/components"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -11,14 +12,15 @@ import (
 
 // config is passed to the Run function in main.go
 type Config struct {
-	//for implementing letterboxing (black bars) see:https://www.raylib.com/examples/core/loader.html?name=core_window_letterbox
-	// VirtualWidth, VirtualHeight int
 	WindowTitle string
+	// Resolution for the screen.
+	Resolution c.Vec2
 }
 
 // info to pass to scenes
 // eg. a camera, game map, or save file
 type Context struct {
+	Config
 	// Assets are files inside the assets folder
 	Assets fs.FS
 	IsWeb  bool
@@ -37,7 +39,7 @@ type Scenes map[string]scene
 func Run(scenes Scenes, cfg Config, Assets fs.FS) error {
 	ActiveSceneId := "start" // look for a scene named start as entry-point
 	ActiveScene, ok := scenes[ActiveSceneId]
-	ctx := Context{Assets: Assets, IsWeb: runtime.GOOS == "js"} // info to pass to scenes.
+	ctx := Context{Assets: Assets, IsWeb: runtime.GOOS == "js", Config: cfg} // info to pass to scenes.
 	if !ok {
 		return errors.New(`Cannot start. There must be a scene with id "start" that is the entry-point`)
 	} else if ActiveScene == nil {

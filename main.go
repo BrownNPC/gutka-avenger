@@ -1,11 +1,11 @@
 package main
 
 import (
+	c "GameFrameworkTM/components"
 	"GameFrameworkTM/engine"
 	"GameFrameworkTM/scenes"
 	"fmt"
 	"io/fs"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -19,7 +19,8 @@ var ASSETS fs.FS
 func main() {
 	rl.SetTraceLogLevel(rl.LogError)
 	err := engine.Run(scenes.Registered, engine.Config{
-		WindowTitle: "change this in main.go",
+		WindowTitle: "Gutka Avenger",
+		Resolution:  c.V2(320,240),
 	}, ASSETS)
 	if err != nil {
 		fmt.Println(err)
