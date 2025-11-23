@@ -6,6 +6,8 @@ import (
 	"GameFrameworkTM/scenes"
 	"fmt"
 	"io/fs"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 // ASSETS could either come from an embedded folder (on web).
@@ -21,6 +23,8 @@ func main() {
 		WindowTitle: "Gutka Avenger",
 		Resolution:  c.V2(256, 160),
 		TilesetPath: "assets/tileset.png",
+		FontPath: "assets/press-start-2p.ttf",
+		ExitKey: rl.KeyNumLock,
 	}, ASSETS)
 	if err != nil {
 		fmt.Println(err)

@@ -18,6 +18,9 @@ type Config struct {
 	Resolution c.Vec2
 	// filename for tileset atlas
 	TilesetPath string
+	// filename for font
+	FontPath string
+	ExitKey  int32
 }
 
 // info to pass to scenes
@@ -28,6 +31,7 @@ type Context struct {
 	Assets  fs.FS
 	IsWeb   bool
 	Tileset level.Tileset
+	Font    rl.Font
 }
 
 // a scene must implement these methods
@@ -46,7 +50,14 @@ func initContext(cfg Config, Assets fs.FS) Context {
 		Assets: Assets,
 		IsWeb:  runtime.GOOS == "js",
 	}
-	ctx.Tileset = level.Tileset(rl.LoadTexture(cfg.TilesetPath))
+	// LOAD TILESET
+	tileset, err := level.LoadTileset(cfg.TilesetPath, Assets)
+	if err != nil {
+		panic(fmt.Errorf("Failed to load tileset: %w", err))
+	}
+	ctx.Tileset = tileset
+	ctx.Font = rl.LoadFont(cfg.FontPath)
+	rl.SetExitKey(cfg.ExitKey)
 	return ctx
 }
 
