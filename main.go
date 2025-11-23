@@ -6,7 +6,6 @@ import (
 	"GameFrameworkTM/scenes"
 	"fmt"
 	"io/fs"
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 // ASSETS could either come from an embedded folder (on web).
@@ -17,10 +16,11 @@ var ASSETS fs.FS
 
 // You can edit the window title in this file.
 func main() {
-	rl.SetTraceLogLevel(rl.LogError)
+	// rl.SetTraceLogLevel(rl.LogError)
 	err := engine.Run(scenes.Registered, engine.Config{
 		WindowTitle: "Gutka Avenger",
 		Resolution:  c.V2(256, 160),
+		TilesetPath: "assets/tileset.png",
 	}, ASSETS)
 	if err != nil {
 		fmt.Println(err)

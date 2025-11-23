@@ -53,8 +53,6 @@ func initContext(cfg Config, Assets fs.FS) Context {
 func Run(scenes Scenes, cfg Config, Assets fs.FS) error {
 	ActiveSceneId := "start" // look for a scene named start as entry-point
 	ActiveScene, ok := scenes[ActiveSceneId]
-	// ------------ INIT CONTEXT ------------
-	ctx := initContext(cfg, Assets)
 	if !ok {
 		return errors.New(`Cannot start. There must be a scene with id "start" that is the entry-point`)
 	} else if ActiveScene == nil {
@@ -66,6 +64,8 @@ func Run(scenes Scenes, cfg Config, Assets fs.FS) error {
 	rl.InitAudioDevice()
 	defer rl.CloseWindow() // de-initialization
 	defer rl.CloseAudioDevice()
+	// ------------ INIT CONTEXT ------------
+	ctx := initContext(cfg, Assets)
 	// -----------------------CENTER WINDOW----------------------------
 	if !ctx.IsWeb {
 		WindowWidth, WindowHeight := (rl.GetScreenWidth()*90)/100, (rl.GetScreenHeight()*90)/100

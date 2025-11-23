@@ -30,6 +30,7 @@ func (scene *Scene) Update(ctx engine.Context) (unload bool) {
 	scene.Screen.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
 	rl.DrawText("There is no game yet lol", 0, int32(ctx.Resolution.Y/2), 10, rl.Black)
+	ctx.Tileset.DrawTile(0,0,0)
 	scene.Screen.EndDrawing()
 	if rl.IsKeyPressed(rl.KeyA) {
 		return true
