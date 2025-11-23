@@ -2,6 +2,7 @@ package engine
 
 import (
 	c "GameFrameworkTM/components"
+	"GameFrameworkTM/components/level"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -15,6 +16,8 @@ type Config struct {
 	WindowTitle string
 	// Resolution for the screen.
 	Resolution c.Vec2
+	// filename for tileset atlas
+	TilesetPath string
 }
 
 // info to pass to scenes
@@ -22,8 +25,9 @@ type Config struct {
 type Context struct {
 	Config
 	// Assets are files inside the assets folder
-	Assets fs.FS
-	IsWeb  bool
+	Assets  fs.FS
+	IsWeb   bool
+	Tileset level.Tileset
 }
 
 // a scene must implement these methods
@@ -36,10 +40,21 @@ type scene interface {
 // map from string id to a Scene
 type Scenes map[string]scene
 
+func initContext(cfg Config, Assets fs.FS) Context {
+	ctx := Context{
+		Config: cfg,
+		Assets: Assets,
+		IsWeb:  runtime.GOOS == "js",
+	}
+	ctx.Tileset = level.Tileset(rl.LoadTexture(cfg.TilesetPath))
+	return ctx
+}
+
 func Run(scenes Scenes, cfg Config, Assets fs.FS) error {
 	ActiveSceneId := "start" // look for a scene named start as entry-point
 	ActiveScene, ok := scenes[ActiveSceneId]
-	ctx := Context{Assets: Assets, IsWeb: runtime.GOOS == "js", Config: cfg} // info to pass to scenes.
+	// ------------ INIT CONTEXT ------------
+	ctx := initContext(cfg, Assets)
 	if !ok {
 		return errors.New(`Cannot start. There must be a scene with id "start" that is the entry-point`)
 	} else if ActiveScene == nil {
