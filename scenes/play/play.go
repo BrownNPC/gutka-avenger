@@ -4,7 +4,6 @@ import (
 	c "GameFrameworkTM/components"
 	"GameFrameworkTM/components/render"
 	"GameFrameworkTM/engine"
-	"runtime"
 
 	"github.com/BrownNPC/simple-ecs"
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -16,7 +15,6 @@ type Scene struct {
 	p      *ecs.Pool
 	Screen render.Screen
 }
-type Dih [40000]byte
 
 // Load is called once the scene is switched to
 func (scene *Scene) Load(ctx engine.Context) {
@@ -25,14 +23,13 @@ func (scene *Scene) Load(ctx engine.Context) {
 	scene.Screen = render.NewScreen(ctx.Resolution)
 	scene.Defer.Add(scene.Screen.Unload)
 	scene.p = ecs.New(10_000)
-	ecs.GetStorage[Dih](scene.p)
 }
 
 // update is called every frame
 func (scene *Scene) Update(ctx engine.Context) (unload bool) {
 	scene.Screen.BeginDrawing()
 	rl.ClearBackground(rl.RayWhite)
-	rl.DrawText("There is no game yet lol", 0, int32(ctx.Resolution.Y/2), 22, rl.Black)
+	rl.DrawText("There is no game yet lol", 0, int32(ctx.Resolution.Y/2), 10, rl.Black)
 	scene.Screen.EndDrawing()
 	if rl.IsKeyPressed(rl.KeyA) {
 		return true
@@ -46,7 +43,5 @@ func (scene *Scene) Unload(ctx engine.Context) (nextSceneID string) {
 	for _, f := range scene.Defer.Items {
 		f()
 	}
-	scene.p = nil
-	runtime.GC()
 	return "start" // the engine will switch to the scene that is registered with this id
 }

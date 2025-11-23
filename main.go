@@ -20,7 +20,7 @@ func main() {
 	rl.SetTraceLogLevel(rl.LogError)
 	err := engine.Run(scenes.Registered, engine.Config{
 		WindowTitle: "Gutka Avenger",
-		Resolution:  c.V2(320,240),
+		Resolution:  c.V2(256, 160),
 	}, ASSETS)
 	if err != nil {
 		fmt.Println(err)

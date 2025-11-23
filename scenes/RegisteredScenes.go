@@ -2,6 +2,7 @@ package scenes
 
 import (
 	"GameFrameworkTM/engine"
+	"GameFrameworkTM/scenes/editor"
 	"GameFrameworkTM/scenes/play"
 	"GameFrameworkTM/scenes/start"
 )
@@ -10,4 +11,5 @@ import (
 var Registered = engine.Scenes{
 	"start": &start.Scene{},
 	"play":  &play.Scene{},
+	"editor": &editor.Scene{},
 }
