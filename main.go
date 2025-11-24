@@ -22,6 +22,7 @@ func main() {
 	err := engine.Run(scenes.Registered, engine.Config{
 		WindowTitle: "Gutka Avenger",
 		Resolution:  c.V2(256, 160),
+		SecondaryResolution: c.V2(600,375),
 		TilesetPath: "assets/tileset.png",
 		FontPath: "assets/press-start-2p.ttf",
 		ExitKey: rl.KeyNumLock,

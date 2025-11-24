@@ -16,6 +16,8 @@ type Config struct {
 	WindowTitle string
 	// Resolution for the screen.
 	Resolution c.Vec2
+	// SecondaryResolution is used for things such as text and gui.
+	SecondaryResolution c.Vec2
 	// filename for tileset atlas
 	TilesetPath string
 	// filename for font
@@ -58,6 +60,7 @@ func initContext(cfg Config, Assets fs.FS) Context {
 	ctx.Tileset = tileset
 	ctx.Font = rl.LoadFont(cfg.FontPath)
 	rl.SetExitKey(cfg.ExitKey)
+	rl.TraceLog(rl.LogInfo, "%d Tiles found in tileset", ctx.Tileset.TileCount)
 	return ctx
 }
 

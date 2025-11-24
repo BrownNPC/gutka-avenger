@@ -41,13 +41,6 @@ func (scene *Scene) Update(ctx engine.Context) (unload bool) {
 	}
 	scene.Screen.EndDrawing()
 
-	// Surface is used to draw fonts and GUI at a higher resolution.
-	scene.Surface.BeginDrawing()
-	{
-		rl.ClearBackground(rl.Blank)
-		rl.DrawTextEx(ctx.Font, "There is no game yet lol", c.V2(ctx.Resolution.X/2, 10).R(), 8, 0, rl.Black)
-	}
-	scene.Surface.EndDrawing()
 
 	if rl.IsKeyPressed(rl.KeyA) {
 		return true

@@ -15,7 +15,7 @@ type Number interface {
 		~float32 | ~float64
 }
 
-func V2[T Number](x, y T) Vec2 {
+func V2[T, U Number](x T, y U) Vec2 {
 	return Vec2{float32(x), float32(y)}
 }
 
