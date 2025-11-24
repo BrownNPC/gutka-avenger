@@ -20,7 +20,9 @@ func NewScreen(resolution c.Vec2) Screen {
 		Width:         virtualWidth,
 		Height:        virtualHeight,
 	}
+	rl.SetTextureFilter(r.renderTexture.Texture, rl.FilterAnisotropic16x)
 	return r
+
 }
 func (r *Screen) Unload() {
 	rl.UnloadRenderTexture(r.renderTexture)
@@ -47,7 +49,7 @@ func (r *Screen) RenderEx(x, y, width, height float32) {
 	// scale := r.Scale()
 	rl.DrawTexturePro(
 		target.Texture,
-		rl.Rectangle{Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
+		rl.Rectangle{X: 0, Y: 0, Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
 		rl.Rectangle{
 			X: x, Y: y,
 			Width:  width,
