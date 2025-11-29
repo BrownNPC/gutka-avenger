@@ -10,7 +10,7 @@ import (
 )
 
 const TILES_PER_ROW = 1024 / TILE_SIZE
-const ATLAS_MAX_TILES = TILES_PER_ROW * TILES_PER_ROW 
+const ATLAS_MAX_TILES = TILES_PER_ROW * TILES_PER_ROW
 
 type Tileset struct {
 	TileCount int
@@ -98,6 +98,26 @@ func (a Tileset) DrawTile(idx int, posX, posY int32) {
 			Y:      float32(posY),
 			Width:  float32(src.Width),
 			Height: float32(src.Height),
+		},
+		rl.Vector2{}, 0, rl.White,
+	)
+}
+func (a Tileset) DrawTileEx(idx int, posX, posY, width, height int32) {
+	src := a.GetTile(idx)
+
+	rl.DrawTexturePro(
+		a.Texture,
+		rl.Rectangle{
+			X:      float32(src.X),
+			Y:      float32(src.Y),
+			Width:  float32(src.Width),
+			Height: float32(src.Height),
+		},
+		rl.Rectangle{
+			X:      float32(posX),
+			Y:      float32(posY),
+			Width:  float32(width),
+			Height: float32(height),
 		},
 		rl.Vector2{}, 0, rl.White,
 	)

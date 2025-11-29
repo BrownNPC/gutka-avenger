@@ -75,9 +75,13 @@ func (r *Screen) Scale() float32 {
 	return min(float32(rl.GetRenderWidth())/float32(r.Width),
 		float32(rl.GetRenderHeight())/float32(r.Height))
 }
+func (r *Screen) VirtualMouse() rl.Vector2 {
+	x, y := r.VirtualMouseInt()
+	return c.V2(x, y).R()
+}
 
 // Get virtual mouse coordinates scaled within the screen.
-func (r *Screen) VirtualMouse() (int, int) {
+func (r *Screen) VirtualMouseInt() (int, int) {
 	mx, my := rl.GetMouseX(), rl.GetMouseY()
 	scale := r.Scale()
 
