@@ -35,10 +35,10 @@ func (r *Screen) Render() {
 	scale := r.Scale()
 
 	// compute integer destination size and integer centered offsets
-	destW := r.Width * scale
-	destH := r.Height * scale
-	offsetX := (rl.GetRenderWidth() - destW) / 2
-	offsetY := (rl.GetRenderHeight() - destH) / 2
+	destW := float32(r.Width) * scale
+	destH := float32(r.Height) * scale
+	offsetX := (float32(rl.GetRenderWidth()) - destW) / 2
+	offsetY := (float32(rl.GetRenderHeight()) - destH) / 2
 
 	rl.DrawTexturePro(
 		target.Texture,
@@ -80,14 +80,8 @@ func (r *Screen) EndDrawing() {
 func (r *Screen) Scale() float32 {
 	// use ints so / is integer division (floor)
 	scaleW := float32(rl.GetRenderWidth()) / float32(r.Width)
-	scaleH := rl.GetRenderHeight() / r.Height
-	var scale int
-	if scaleW > 1 {
-		scale = scaleW
-	} else {
-		scale = scaleH
-	}
-
+	scaleH := float32(rl.GetRenderHeight()) / float32(r.Height)
+	var scale = min(scaleW, scaleH)
 	return max(1, scale)
 }
 
@@ -102,10 +96,10 @@ func (r *Screen) VirtualMouseInt() (int, int) {
 	scale := r.Scale()
 
 	// integer offsets to match Render()
-	destW := r.Width * scale
-	destH := r.Height * scale
-	offsetX := (rl.GetRenderWidth() - destW) / 2
-	offsetY := (rl.GetRenderHeight() - destH) / 2
+	destW := float32(r.Width) * scale
+	destH := float32(r.Height) * scale
+	offsetX := (float32(rl.GetRenderWidth()) - destW) / 2
+	offsetY := (float32(rl.GetRenderHeight()) - destH) / 2
 
 	vx := (float32(mx) - float32(offsetX)) / float32(scale)
 	vy := (float32(my) - float32(offsetY)) / float32(scale)
