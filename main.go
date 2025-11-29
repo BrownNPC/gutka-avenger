@@ -20,12 +20,12 @@ var ASSETS fs.FS
 func main() {
 	// rl.SetTraceLogLevel(rl.LogError)
 	err := engine.Run(scenes.Registered, engine.Config{
-		WindowTitle: "Gutka Avenger",
-		Resolution:  c.V2(256, 160),
-		SecondaryResolution: c.V2(600,375),
-		TilesetPath: "assets/tileset.png",
-		FontPath: "assets/press-start-2p.ttf",
-		ExitKey: rl.KeyNumLock,
+		WindowTitle:         "Gutka Avenger",
+		Resolution:          c.V2(c.BaseResolutionX, c.BaseResolutionY),
+		SecondaryResolution: c.V2(c.SecondaryResolutionX, c.SecondaryResolutionY),
+		TilesetPath:         "assets/tileset.png",
+		FontPath:            "assets/press-start-2p.ttf",
+		ExitKey:             rl.KeyNumLock,
 	}, ASSETS)
 	if err != nil {
 		fmt.Println(err)

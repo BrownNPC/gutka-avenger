@@ -8,9 +8,15 @@ import (
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+const TILE_SIZE = 16 //16px
 
 const TILES_PER_ROW = 1024 / TILE_SIZE
 const ATLAS_MAX_TILES = TILES_PER_ROW * TILES_PER_ROW
+
+type Tile struct {
+	// Which tile is this from the atlas?
+	Index int
+}
 
 type Tileset struct {
 	TileCount int

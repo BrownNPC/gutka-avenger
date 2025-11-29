@@ -20,10 +20,11 @@ func NewScreen(resolution c.Vec2) Screen {
 		Width:         virtualWidth,
 		Height:        virtualHeight,
 	}
-	rl.SetTextureFilter(r.renderTexture.Texture, rl.FilterAnisotropic16x)
+	// Use nearest neighbor / point sampling for crisp integer scaling
+	rl.SetTextureFilter(r.renderTexture.Texture, rl.FilterPoint)
 	return r
-
 }
+
 func (r *Screen) Unload() {
 	rl.UnloadRenderTexture(r.renderTexture)
 }
@@ -32,21 +33,28 @@ func (r *Screen) Unload() {
 func (r *Screen) Render() {
 	target := r.renderTexture
 	scale := r.Scale()
+
+	// compute integer destination size and integer centered offsets
+	destW := r.Width * scale
+	destH := r.Height * scale
+	offsetX := (rl.GetRenderWidth() - destW) / 2
+	offsetY := (rl.GetRenderHeight() - destH) / 2
+
 	rl.DrawTexturePro(
 		target.Texture,
-		rl.Rectangle{Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
+		rl.Rectangle{X: 0, Y: 0, Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
 		rl.Rectangle{
-			X:      (float32(rl.GetRenderWidth()) - float32(r.Width)*scale) * 0.5,
-			Y:      (float32(rl.GetRenderHeight()) - float32(r.Height)*scale) * 0.5,
-			Width:  float32(r.Width) * scale,
-			Height: float32(r.Height) * scale,
+			X:      float32(offsetX),
+			Y:      float32(offsetY),
+			Width:  float32(destW),
+			Height: float32(destH),
 		},
 		rl.Vector2{X: 0, Y: 0}, 0, rl.White,
 	)
 }
+
 func (r *Screen) RenderEx(x, y, width, height float32) {
 	target := r.renderTexture
-	// scale := r.Scale()
 	rl.DrawTexturePro(
 		target.Texture,
 		rl.Rectangle{X: 0, Y: 0, Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
@@ -59,22 +67,30 @@ func (r *Screen) RenderEx(x, y, width, height float32) {
 	)
 }
 
-// render the render texture with black bars to keep the aspect ratio
 func (r *Screen) BeginDrawing() {
 	rl.BeginTextureMode(r.renderTexture)
 }
 
-// render the render texture with black bars to keep the aspect ratio
 func (r *Screen) EndDrawing() {
 	rl.EndTextureMode()
 	r.Render()
 }
 
-// Get scaling factor.
+// Get scaling factor (integer). Clamp to at least 1 to avoid zero.
 func (r *Screen) Scale() float32 {
-	return min(float32(rl.GetRenderWidth())/float32(r.Width),
-		float32(rl.GetRenderHeight())/float32(r.Height))
+	// use ints so / is integer division (floor)
+	scaleW := float32(rl.GetRenderWidth()) / float32(r.Width)
+	scaleH := rl.GetRenderHeight() / r.Height
+	var scale int
+	if scaleW > 1 {
+		scale = scaleW
+	} else {
+		scale = scaleH
+	}
+
+	return max(1, scale)
 }
+
 func (r *Screen) VirtualMouse() rl.Vector2 {
 	x, y := r.VirtualMouseInt()
 	return c.V2(x, y).R()
@@ -85,20 +101,28 @@ func (r *Screen) VirtualMouseInt() (int, int) {
 	mx, my := rl.GetMouseX(), rl.GetMouseY()
 	scale := r.Scale()
 
-	offsetX := (float32(rl.GetRenderWidth()) - float32(r.Width)*scale) * 0.5
-	offsetY := (float32(rl.GetRenderHeight()) - float32(r.Height)*scale) * 0.5
+	// integer offsets to match Render()
+	destW := r.Width * scale
+	destH := r.Height * scale
+	offsetX := (rl.GetRenderWidth() - destW) / 2
+	offsetY := (rl.GetRenderHeight() - destH) / 2
 
-	vx := (float32(mx) - offsetX) / scale
-	vy := (float32(my) - offsetY) / scale
+	vx := (float32(mx) - float32(offsetX)) / float32(scale)
+	vy := (float32(my) - float32(offsetY)) / float32(scale)
 
+	// clamp to virtual resolution
 	if vx < 0 {
 		vx = 0
 	}
-	vx = max(vx, 0)
-	vy = max(vy, 0)
-
-	vx = min(vx, float32(r.Width))
-	vy = min(vy, float32(r.Height))
+	if vy < 0 {
+		vy = 0
+	}
+	if vx > float32(r.Width) {
+		vx = float32(r.Width)
+	}
+	if vy > float32(r.Height) {
+		vy = float32(r.Height)
+	}
 
 	return int(vx), int(vy)
 }

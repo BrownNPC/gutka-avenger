@@ -73,7 +73,7 @@ func Run(scenes Scenes, cfg Config, Assets fs.FS) error {
 		return errors.New("start scene cannot be nil")
 	}
 	// --------------BEGIN--------------
-	rl.SetConfigFlags(rl.FlagWindowResizable)
+	rl.SetConfigFlags(rl.FlagWindowResizable|rl.FlagWindowAlwaysRun)
 	rl.InitWindow(0, 0, cfg.WindowTitle)
 	rl.InitAudioDevice()
 	defer rl.CloseWindow() // de-initialization

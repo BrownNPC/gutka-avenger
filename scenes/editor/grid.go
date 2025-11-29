@@ -8,7 +8,6 @@ import (
 )
 
 // Functions for the actual editing grid/level
-
 func (scene *Scene) drawLevelGrid(ctx engine.Context) {
 	for i := range int32(ctx.Resolution.X/level.TILE_SIZE) + 1 {
 		x := i * level.TILE_SIZE

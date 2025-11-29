@@ -1,15 +1,15 @@
 package level
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	c "GameFrameworkTM/components"
 
-type Tile struct {
-	// Which tile is this from the atlas?
-	Index int
-}
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
-const TILE_SIZE = 16 //16px
+const LEVEL_WIDTH = c.BaseResolutionX/ TILE_SIZE
+const LEVEL_HEIGHT = c.BaseResolutionY / TILE_SIZE
 
-type Tiles [256 / TILE_SIZE][160 / TILE_SIZE]Tile
+type Tiles [LEVEL_WIDTH][LEVEL_HEIGHT]Tile
 type Level struct {
 	// Background image.
 	Background rl.Texture2D

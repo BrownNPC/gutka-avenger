@@ -12,6 +12,7 @@ type Scene struct {
 	Screen       render.Screen
 	LevelScreen  render.Screen
 	ColorPallete [4]uint
+	TilePicker   [92][5][9]int
 	Defer        c.Stack[func()]
 }
 
@@ -56,12 +57,25 @@ func (scene *Scene) drawTilePicker(ctx engine.Context) {
 	// Used to check if mouse cursor is inside
 	canvas := rl.NewRectangle(405, 5, 190, 365)
 	// check if mouse is inside tile picker
-	IsMouseInside := rl.CheckCollisionCircleRec(scene.Screen.VirtualMouse(), 1, canvas)
+	IsMouseInside := rl.CheckCollisionPointRec(scene.Screen.VirtualMouse(), canvas)
 	canvasColor := c.If(IsMouseInside, scene.ColorPallete[3], scene.ColorPallete[1])
 
+	// Draw canvas
 	rl.DrawRectangleRoundedLines(canvas,
-		0.1, 10, rl.GetColor(canvasColor))
-	ctx.Tileset.DrawTileEx(0, 410, 10, 32, 32)
+		0.1, 5, rl.GetColor(canvasColor))
+	for j := range int32(9) {
+		y := j*36 + 16
+		for i := range int32(5) {
+			x := 412 + (i * 36)
+			ctx.Tileset.DrawTileEx(0, x, y, 32, 32)
+
+			mouseInsideThisTile := rl.CheckCollisionPointRec(scene.Screen.VirtualMouse(),
+				rl.NewRectangle(float32(x), float32(y), 32, 32))
+			if mouseInsideThisTile {
+				rl.DrawRectangleLines(x, y, 32, 32, rl.GetColor(scene.ColorPallete[3]))
+			}
+		}
+	}
 }
 
 // called after Update returns true
