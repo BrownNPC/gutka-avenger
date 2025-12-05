@@ -6,10 +6,10 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-const LEVEL_WIDTH = c.BaseResolutionX/ TILE_SIZE
-const LEVEL_HEIGHT = c.BaseResolutionY / TILE_SIZE
+const TOTAL_TILES_X = c.BaseResolutionX/ TILE_SIZE
+const TOTAL_TILES_Y = c.BaseResolutionY / TILE_SIZE
 
-type Tiles [LEVEL_WIDTH][LEVEL_HEIGHT]Tile
+type Tiles [TOTAL_TILES_X][TOTAL_TILES_Y]Tile
 type Level struct {
 	// Background image.
 	Background rl.Texture2D

@@ -10,8 +10,8 @@ import (
 )
 const TILE_SIZE = 16 //16px
 
-const TILES_PER_ROW = 1024 / TILE_SIZE
-const ATLAS_MAX_TILES = TILES_PER_ROW * TILES_PER_ROW
+const TILESET_TILES_PER_ROW = 1024 / TILE_SIZE
+const TILESET_MAX_TILES = TILESET_TILES_PER_ROW * TILESET_TILES_PER_ROW
 
 type Tile struct {
 	// Which tile is this from the atlas?
@@ -36,7 +36,7 @@ func LoadTileset(path string, assets fs.FS) (t Tileset, err error) {
 	}
 	// count the number of tiles in the tileset.
 	var tileCount int
-	for i := range ATLAS_MAX_TILES {
+	for i := range TILESET_MAX_TILES {
 		if tileIsOpaque(img, i) {
 			tileCount++
 		}
@@ -49,8 +49,8 @@ func LoadTileset(path string, assets fs.FS) (t Tileset, err error) {
 }
 
 func tileIsOpaque(img image.Image, i int) bool {
-	tileX := (i % TILES_PER_ROW) * TILE_SIZE
-	tileY := (i / TILES_PER_ROW) * TILE_SIZE
+	tileX := (i % TILESET_TILES_PER_ROW) * TILE_SIZE
+	tileY := (i / TILESET_TILES_PER_ROW) * TILE_SIZE
 
 	for x := range TILE_SIZE {
 		for y := range TILE_SIZE {
@@ -69,7 +69,7 @@ func tileIsOpaque(img image.Image, i int) bool {
 
 // Get tile's pixel rectangle
 func (a Tileset) GetTile(idx int) rl.RectangleInt32 {
-	if idx < 0 || idx >= ATLAS_MAX_TILES {
+	if idx < 0 || idx >= TILESET_MAX_TILES {
 		panic("GetTile: Tile index out of range")
 	}
 	if idx > a.TileCount {
@@ -77,8 +77,8 @@ func (a Tileset) GetTile(idx int) rl.RectangleInt32 {
 		idx = 0
 	}
 
-	x := (idx % TILES_PER_ROW) * TILE_SIZE
-	y := (idx / TILES_PER_ROW) * TILE_SIZE
+	x := (idx % TILESET_TILES_PER_ROW) * TILE_SIZE
+	y := (idx / TILESET_TILES_PER_ROW) * TILE_SIZE
 
 	return rl.RectangleInt32{
 		X:      int32(x),

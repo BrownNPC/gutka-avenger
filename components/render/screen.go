@@ -8,23 +8,23 @@ import (
 
 // Screen provides a wrapper around a raylib render texture
 type Screen struct {
-	renderTexture rl.RenderTexture2D
-	Width, Height int
+	renderTexture      rl.RenderTexture2D
+	InternalResolution c.Vec2
+	TargetPosition     c.Vec2
+	TargetResolution   c.Vec2
 }
 
 // Does letterboxing (black bars) to maintain the resolution.
 func NewScreen(resolution c.Vec2) Screen {
 	virtualWidth, virtualHeight := resolution.ToInt()
 	r := Screen{
-		renderTexture: rl.LoadRenderTexture(int32(virtualWidth), int32(virtualHeight)),
-		Width:         virtualWidth,
-		Height:        virtualHeight,
+		renderTexture:      rl.LoadRenderTexture(int32(virtualWidth), int32(virtualHeight)),
+		InternalResolution: resolution,
 	}
-	// Use nearest neighbor / point sampling for crisp integer scaling
-	rl.SetTextureFilter(r.renderTexture.Texture, rl.FilterPoint)
+	rl.SetTextureFilter(r.renderTexture.Texture, rl.FilterAnisotropic16x)
 	return r
-}
 
+}
 func (r *Screen) Unload() {
 	rl.UnloadRenderTexture(r.renderTexture)
 }
@@ -32,59 +32,63 @@ func (r *Screen) Unload() {
 // render the render texture with black bars to keep the aspect ratio
 func (r *Screen) Render() {
 	target := r.renderTexture
-	scale := r.Scale()
+	// RENDER SIZE
+	RS := c.V2(rl.GetRenderWidth(), rl.GetRenderHeight())
+	r.TargetResolution = RS //set temporarily for calculating scale
+	//Fractionally scale InternalResolution
+	r.TargetResolution = r.InternalResolution.Scale(r.Scale())
 
-	// compute integer destination size and integer centered offsets
-	destW := float32(r.Width) * scale
-	destH := float32(r.Height) * scale
-	offsetX := (float32(rl.GetRenderWidth()) - destW) / 2
-	offsetY := (float32(rl.GetRenderHeight()) - destH) / 2
+	// Area remaining after fractionally scaling InternalResolution
+	remainingW := RS.X - r.TargetResolution.X
+	remainingH := RS.Y - r.TargetResolution.Y
+
+	// Draw final picture in center
+	r.TargetPosition.X = remainingW * 0.5
+	r.TargetPosition.Y = remainingH * 0.5
 
 	rl.DrawTexturePro(
 		target.Texture,
-		rl.Rectangle{X: 0, Y: 0, Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
-		rl.Rectangle{
-			X:      float32(offsetX),
-			Y:      float32(offsetY),
-			Width:  float32(destW),
-			Height: float32(destH),
-		},
+		rl.Rectangle{Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
+		rl.NewRectangle(
+			r.TargetPosition.X, r.TargetPosition.Y,
+			r.TargetResolution.X, r.TargetResolution.Y,
+		),
 		rl.Vector2{X: 0, Y: 0}, 0, rl.White,
 	)
 }
-
 func (r *Screen) RenderEx(x, y, width, height float32) {
 	target := r.renderTexture
+	r.TargetPosition = c.V2(x, y)
+	r.TargetResolution = c.V2(x, y)
 	rl.DrawTexturePro(
 		target.Texture,
-		rl.Rectangle{X: 0, Y: 0, Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
-		rl.Rectangle{
-			X: x, Y: y,
-			Width:  width,
-			Height: height,
-		},
+		rl.Rectangle{Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
+		rl.NewRectangle(
+			r.TargetPosition.X, r.TargetPosition.Y,
+			r.TargetResolution.X, r.TargetResolution.Y,
+		),
 		rl.Vector2{X: 0, Y: 0}, 0, rl.White,
 	)
 }
 
+// render the render texture with black bars to keep the aspect ratio
 func (r *Screen) BeginDrawing() {
 	rl.BeginTextureMode(r.renderTexture)
 }
 
+// render the render texture with black bars to keep the aspect ratio
 func (r *Screen) EndDrawing() {
 	rl.EndTextureMode()
 	r.Render()
 }
 
-// Get scaling factor (integer). Clamp to at least 1 to avoid zero.
+// Get scaling factor.
 func (r *Screen) Scale() float32 {
-	// use ints so / is integer division (floor)
-	scaleW := float32(rl.GetRenderWidth()) / float32(r.Width)
-	scaleH := float32(rl.GetRenderHeight()) / float32(r.Height)
-	var scale = min(scaleW, scaleH)
-	return max(1, scale)
+	return min(
+		r.TargetResolution.X/r.InternalResolution.X,
+		r.TargetResolution.Y/r.InternalResolution.Y,
+	)
 }
-
 func (r *Screen) VirtualMouse() rl.Vector2 {
 	x, y := r.VirtualMouseInt()
 	return c.V2(x, y).R()
@@ -95,28 +99,20 @@ func (r *Screen) VirtualMouseInt() (int, int) {
 	mx, my := rl.GetMouseX(), rl.GetMouseY()
 	scale := r.Scale()
 
-	// integer offsets to match Render()
-	destW := float32(r.Width) * scale
-	destH := float32(r.Height) * scale
-	offsetX := (float32(rl.GetRenderWidth()) - destW) / 2
-	offsetY := (float32(rl.GetRenderHeight()) - destH) / 2
+	offsetX := (float32(rl.GetRenderWidth()) - float32(r.Width)*scale) * 0.5
+	offsetY := (float32(rl.GetRenderHeight()) - float32(r.Height)*scale) * 0.5
 
-	vx := (float32(mx) - float32(offsetX)) / float32(scale)
-	vy := (float32(my) - float32(offsetY)) / float32(scale)
+	vx := (float32(mx) - offsetX) / scale
+	vy := (float32(my) - offsetY) / scale
 
-	// clamp to virtual resolution
 	if vx < 0 {
 		vx = 0
 	}
-	if vy < 0 {
-		vy = 0
-	}
-	if vx > float32(r.Width) {
-		vx = float32(r.Width)
-	}
-	if vy > float32(r.Height) {
-		vy = float32(r.Height)
-	}
+	vx = max(vx, 0)
+	vy = max(vy, 0)
+
+	vx = min(vx, float32(r.Width))
+	vy = min(vy, float32(r.Height))
 
 	return int(vx), int(vy)
 }
