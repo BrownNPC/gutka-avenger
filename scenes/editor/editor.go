@@ -2,6 +2,7 @@ package editor
 
 import (
 	c "GameFrameworkTM/components"
+	"GameFrameworkTM/components/level"
 	"GameFrameworkTM/components/render"
 	"GameFrameworkTM/engine"
 
@@ -13,6 +14,7 @@ type Scene struct {
 	LevelScreen  render.Screen
 	ColorPallete [4]uint
 	TilePicker   [92][5][9]int
+	SelectedTile level.Tile
 	Defer        c.Stack[func()]
 }
 
@@ -35,7 +37,7 @@ func (scene *Scene) Update(ctx engine.Context) (unload bool) {
 	// Render Level to Render Texture, dont draw to screen yet.
 	scene.LevelScreen.BeginDrawing()
 	{
-		rl.ClearBackground(rl.GetColor(uint(scene.ColorPallete[3])))
+		rl.ClearBackground(rl.GetColor(uint(scene.ColorPallete[2])))
 		scene.drawLevelGrid(ctx)
 	}
 	rl.EndTextureMode()
@@ -46,33 +48,51 @@ func (scene *Scene) Update(ctx engine.Context) (unload bool) {
 		rl.ClearBackground(rl.GetColor(scene.ColorPallete[0]))
 		// Draw level
 		scene.LevelScreen.RenderEx(0, 0, 400, 250, &scene.Screen)
-		scene.drawTilePicker(ctx)
+		scene.drawTilePicker(ctx, rl.NewRectangle(405, 5, 190, 365))
+		levelGridHeight := scene.LevelScreen.TargetResolution.Y
+		ctx.Tileset.DrawTileEx(scene.SelectedTile.Index, 10, int32(levelGridHeight+30), 32, 32)
 	}
 	scene.Screen.EndDrawing()
 
 	return false // if true is returned, Unload is called
 }
 
-func (scene *Scene) drawTilePicker(ctx engine.Context) {
+// TILE PICKER
+func (scene *Scene) drawTilePicker(ctx engine.Context, canvas rl.Rectangle) {
 	// Used to check if mouse cursor is inside
-	canvas := rl.NewRectangle(405, 5, 190, 365)
 	// check if mouse is inside tile picker
 	IsMouseInside := rl.CheckCollisionPointRec(scene.Screen.VirtualMouse(), canvas)
 	canvasColor := c.If(IsMouseInside, scene.ColorPallete[3], scene.ColorPallete[1])
 
-	// Draw canvas
+	// Draw tile pallete (border)
 	rl.DrawRectangleRoundedLines(canvas,
 		0.1, 5, rl.GetColor(canvasColor))
+	scene.tilePickerTiles(ctx)
+}
+
+// Render all the loaded tiles in the tileset (ctx.Tileset)
+func (scene *Scene) tilePickerTiles(ctx engine.Context) {
+	var TileIndex int
 	for j := range int32(9) {
 		y := j*36 + 16
 		for i := range int32(5) {
 			x := 412 + (i * 36)
-			ctx.Tileset.DrawTileEx(0, x, y, 32, 32)
+			ctx.Tileset.DrawTileEx(TileIndex, x, y, 32, 32)
 
+			// Draw outline if mouse hovers over tile
 			mouseInsideThisTile := rl.CheckCollisionPointRec(scene.Screen.VirtualMouse(),
 				rl.NewRectangle(float32(x), float32(y), 32, 32))
 			if mouseInsideThisTile {
 				rl.DrawRectangleLines(x, y, 32, 32, rl.GetColor(scene.ColorPallete[3]))
+				// Make this the SelectedTile if mouse is clicked
+				if rl.IsMouseButtonPressed(rl.MouseButtonLeft) {
+					scene.SelectedTile = level.Tile{Index: TileIndex}
+				}
+			}
+			// Only draw tiles that are available
+			TileIndex++
+			if TileIndex == ctx.Tileset.TileCount {
+				return
 			}
 		}
 	}
