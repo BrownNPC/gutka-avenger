@@ -2,7 +2,6 @@ package render
 
 import (
 	c "GameFrameworkTM/components"
-	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -94,13 +93,11 @@ func (r *Screen) Scale() float32 {
 }
 func (r *Screen) VirtualMouse() rl.Vector2 {
 	mouse := c.V2(rl.GetMouseX(), rl.GetMouseY())
-	var parentOffset c.Vec2
 	if r.Parent != nil {
-		parentOffset = r.Parent.TargetPosition
-		fmt.Println(parentOffset)
+		mouse = c.Vec2(r.Parent.VirtualMouse())
 	}
 	//VirtualMouse
-	vMouse := mouse.Sub(r.TargetPosition).Sub(parentOffset).Scale(1.0 / r.Scale())
+	vMouse := mouse.Sub(r.TargetPosition).Scale(1.0 / r.Scale())
 	return vMouse.R()
 }
 
