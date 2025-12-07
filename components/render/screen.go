@@ -2,12 +2,15 @@ package render
 
 import (
 	c "GameFrameworkTM/components"
+	"fmt"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 // Screen provides a wrapper around a raylib render texture
 type Screen struct {
+	// This screen is being drawn inside another screen.
+	Parent             *Screen
 	renderTexture      rl.RenderTexture2D
 	InternalResolution c.Vec2
 	TargetPosition     c.Vec2
@@ -21,7 +24,6 @@ func NewScreen(resolution c.Vec2) Screen {
 		renderTexture:      rl.LoadRenderTexture(int32(virtualWidth), int32(virtualHeight)),
 		InternalResolution: resolution,
 	}
-	rl.SetTextureFilter(r.renderTexture.Texture, rl.FilterAnisotropic16x)
 	return r
 
 }
@@ -56,10 +58,11 @@ func (r *Screen) Render() {
 		rl.Vector2{X: 0, Y: 0}, 0, rl.White,
 	)
 }
-func (r *Screen) RenderEx(x, y, width, height float32) {
+func (r *Screen) RenderEx(x, y, width, height float32, Parent *Screen) {
+	r.Parent = Parent
 	target := r.renderTexture
 	r.TargetPosition = c.V2(x, y)
-	r.TargetResolution = c.V2(x, y)
+	r.TargetResolution = c.V2(width, height)
 	rl.DrawTexturePro(
 		target.Texture,
 		rl.Rectangle{Width: float32(target.Texture.Width), Height: float32(-target.Texture.Height)},
@@ -90,29 +93,18 @@ func (r *Screen) Scale() float32 {
 	)
 }
 func (r *Screen) VirtualMouse() rl.Vector2 {
-	x, y := r.VirtualMouseInt()
-	return c.V2(x, y).R()
+	mouse := c.V2(rl.GetMouseX(), rl.GetMouseY())
+	var parentOffset c.Vec2
+	if r.Parent != nil {
+		parentOffset = r.Parent.TargetPosition
+		fmt.Println(parentOffset)
+	}
+	//VirtualMouse
+	vMouse := mouse.Sub(r.TargetPosition).Sub(parentOffset).Scale(1.0 / r.Scale())
+	return vMouse.R()
 }
 
 // Get virtual mouse coordinates scaled within the screen.
 func (r *Screen) VirtualMouseInt() (int, int) {
-	mx, my := rl.GetMouseX(), rl.GetMouseY()
-	scale := r.Scale()
-
-	offsetX := (float32(rl.GetRenderWidth()) - float32(r.Width)*scale) * 0.5
-	offsetY := (float32(rl.GetRenderHeight()) - float32(r.Height)*scale) * 0.5
-
-	vx := (float32(mx) - offsetX) / scale
-	vy := (float32(my) - offsetY) / scale
-
-	if vx < 0 {
-		vx = 0
-	}
-	vx = max(vx, 0)
-	vy = max(vy, 0)
-
-	vx = min(vx, float32(r.Width))
-	vy = min(vy, float32(r.Height))
-
-	return int(vx), int(vy)
+	return c.Vec2(r.VirtualMouse()).ToInt()
 }

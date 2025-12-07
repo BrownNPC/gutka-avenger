@@ -45,7 +45,7 @@ func (scene *Scene) Update(ctx engine.Context) (unload bool) {
 	{
 		rl.ClearBackground(rl.GetColor(scene.ColorPallete[0]))
 		// Draw level
-		scene.LevelScreen.RenderEx(0, 0, 400, 250)
+		scene.LevelScreen.RenderEx(0, 0, 400, 250, &scene.Screen)
 		scene.drawTilePicker(ctx)
 	}
 	scene.Screen.EndDrawing()
